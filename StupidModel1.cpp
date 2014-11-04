@@ -51,10 +51,10 @@ private:
 	Vector2i gridLoc;
 
 	//pointer to main grid
-	std::vector<std::vector<Cell>> * grid;
+	std::vector<std::vector<Cell> > * grid;
 
 public:
-	Bug(Vector2i loc, float radius, std::vector<std::vector<Cell>> * grid) : gridLoc(loc), m_shape(radius), grid(grid) {
+	Bug(Vector2i loc, float radius, std::vector<std::vector<Cell> > * grid) : gridLoc(loc), m_shape(radius), grid(grid) {
 		m_shape.setPosition(gridLoc.x * GridSpacing, gridLoc.y * GridSpacing);
 		m_shape.setFillColor(Color::Red);
 	}
@@ -104,7 +104,7 @@ int main()
 	// Create the main window
 	RenderWindow window(sf::VideoMode(800, 600, 32), "Stupid model 1");
 		 
-	std::vector<std::vector<Cell>> grid;
+	std::vector<std::vector<Cell> > grid;
 	std::vector<Bug> bugs;
 
 	//fill the vectors with cells
@@ -149,7 +149,7 @@ int main()
 		//move bugs once a second
 		if ( clock.getElapsedTime().asSeconds() >= 1 ) {
 
-			for(auto itr = bugs.begin(); itr != bugs.end(); itr++)
+			for(std::vector<Bug>::iterator itr = bugs.begin(); itr != bugs.end(); itr++)
 			{
 				itr->Move();
 			}
@@ -158,7 +158,7 @@ int main()
 			clock.restart();
 		}
 		
-		for(auto itr = bugs.begin(); itr != bugs.end(); itr++)
+		for(std::vector<Bug>::iterator itr = bugs.begin(); itr != bugs.end(); itr++)
 		{
 			itr->Draw(window);
 		}
