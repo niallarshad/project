@@ -1,0 +1,96 @@
+
+#ifdef _DEBUG
+#pragma comment(lib,"sfml-graphics-d.lib")
+#pragma comment(lib,"sfml-audio-d.lib")
+#pragma comment(lib,"sfml-system-d.lib")
+#pragma comment(lib,"sfml-window-d.lib")
+#pragma comment(lib,"sfml-network-d.lib")
+#else
+#pragma comment(lib,"sfml-graphics.lib")
+#pragma comment(lib,"sfml-audio.lib")
+#pragma comment(lib,"sfml-system.lib")
+#pragma comment(lib,"sfml-window.lib")
+#pragma comment(lib,"sfml-network.lib")
+#endif
+#pragma comment(lib,"opengl32.lib")
+#pragma comment(lib,"glu32.lib")
+#include "SFML/Graphics.hpp"
+#include "SFML/OpenGL.hpp"
+#include <iostream>
+#include <fstream>
+#define _USE_MATH_DEFINES
+#include <math.h>
+ 
+ 
+using namespace std;
+
+
+int main()
+{
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Window");
+
+    sf::Mouse mouse;
+    while(window.isOpen())
+    {
+        window.clear(sf::Color::White);
+        sf::Event event;
+        while(window.pollEvent(event))
+        {
+            switch(event.type)
+            {
+                case sf::Event::Closed:
+                {
+                    window.close();
+                }break;
+                case sf::Event::Resized:
+                {
+                    sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+                    window.setView(sf::View(visibleArea));
+                }break;
+            }
+        }
+
+        //Set Tiles to Grid Test
+        sf::Texture setGridTexture;
+        sf::Sprite setGridSprite;
+        setGridSprite.setTexture(setGridTexture);
+        setGridSprite.setColor(sf::Color::Black);
+
+        sf::Vector2i Grid(15,15);
+
+        sf::Texture tempGridTexture;
+        sf::Sprite tempGridSprite;
+        tempGridSprite.setTexture(tempGridTexture);
+        tempGridSprite.setColor(sf::Color::Green);
+
+        sf::Vector2i setTilesOnGridX(mouse.getPosition(window).x, Grid.x);
+        sf::Vector2i setTilesOnGridY(mouse.getPosition(window).y, Grid.y);
+
+        //Draw Grid
+        for(int i = 0; i < Grid.x; i++)
+        {
+            for(int j = 0; j < Grid.y; j++)
+            {
+                tempGridSprite.setPosition(j * 32, i * 32);
+                tempGridSprite.setTextureRect(sf::IntRect(Grid.x * 32, Grid.y * 32, 32, 32));
+                window.draw(tempGridSprite);
+            }
+        }
+
+        //Place Tiles
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+        {
+            cout << "Clicked" << endl;
+            window.draw(setGridSprite);
+            setGridSprite.setPosition(setTilesOnGridX.x * 32, setTilesOnGridY.y * 32);
+            setGridSprite.setTextureRect(sf::IntRect(Grid.x * 32, Grid.y * 32, 32, 32));
+            }
+            else
+            {
+                cout << "Let go" << endl;
+            }
+
+        //End set tiles to Grid Test.
+        window.display();
+    }
+}
