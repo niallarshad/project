@@ -89,7 +89,6 @@ int main()
 			for(std::vector<Bug>::iterator itr = bugs.begin(); itr != bugs.end(); itr++)
 			{
 				itr->Move();
-				itr->Grow();
 			}
 
 			//restart the clock
