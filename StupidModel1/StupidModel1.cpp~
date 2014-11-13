@@ -30,7 +30,7 @@
 #define GridSpacing 5
 
 #include "Bug.h"
-
+#include "Cell.h"
 
 using namespace sf;
  

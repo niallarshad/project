@@ -3,7 +3,7 @@
 
 #define GridSpacing 5
 
-#include "SFML/Graphics.hpp"
+#include "SFML\Graphics.hpp"
 #include "Cell.h"
 
 using namespace sf;
@@ -21,6 +21,7 @@ private:
 
 public:
 	Bug(Vector2i loc, float radius, std::vector<std::vector<Cell> > * grid);
+	void Grow();
 	void Move();
 	void Draw(RenderWindow &w);
 };

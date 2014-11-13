@@ -3,7 +3,7 @@
 
 #define GridSpacing 5
 
-#include "SFML/Graphics.hpp"
+#include "SFML\Graphics.hpp"
 #include "Cell.h"
 
 using namespace sf;
