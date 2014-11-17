@@ -39,7 +39,7 @@ int main()
 	srand( time(NULL) );
 
 	// Create the main window
-	RenderWindow window(sf::VideoMode(800, 600, 32), "Stupid model 1");
+	RenderWindow window(sf::VideoMode(800, 600, 32), "Stupid model 2");
 		 
 	std::vector<std::vector<Cell> > grid;
 	std::vector<Bug> bugs;

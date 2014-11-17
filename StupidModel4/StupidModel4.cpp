@@ -45,7 +45,7 @@ int main()
 	srand( time(NULL) );
 
 	// Create the main window
-	RenderWindow window(sf::VideoMode(800, 600, 32), "Stupid model 3");
+	RenderWindow window(sf::VideoMode(800, 600, 32), "Stupid model 4");
 		 
 	std::vector<std::vector<HabitatCell> > grid;
 	std::vector<Bug> bugs;
