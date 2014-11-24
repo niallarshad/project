@@ -1,0 +1,7 @@
+#STUPID_CELL.DATA
+#Cell information for creation of stupid model grid.
+#X Y FoodAvailability
+1 1 2
+50 50 0.5
+34 99 0.01
+67 8 4
