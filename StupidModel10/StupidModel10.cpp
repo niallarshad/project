@@ -94,7 +94,7 @@ int main()
 	font.loadFromFile( "../../kenvector_future.ttf" );
 
 	// Create the main window
-	RenderWindow window(VideoMode(800, 600, 32), "Stupid model 9");
+	RenderWindow window(VideoMode(800, 600, 32), "Stupid model 10");
 	Histogram graph( 10, font );
 		 
 	std::vector<std::vector<HabitatCell> > grid;
@@ -191,22 +191,25 @@ int main()
 			meanSize = 0;
 
 			//tell teh bugs they're allowed to act
-			for(int i = 0; i < bugs.size(); i++)
-			{
-				bugs[i].CanActThisCycle();
-			}
+			//for(int i = 0; i < bugs.size(); i++)
+			//{
+			//	bugs[i].CanActThisCycle();
+			//}
+
+			//sort the bugs in descending order by size;
+			std::sort(bugs.rbegin(), bugs.rend());
 
 			//randomize the order in which bugs move and grow
 			for(int i = 0; i < noOfBugs; i++)
 			{
 				//pick a random bug...
-				int j = rand() % noOfBugs;
+				//int j = rand() % noOfBugs;
 
 				//...if the bug was already chosen to move/grow...
-				if ( bugs[j].ActedThisCycle() ) {
-					--i;	
-					continue; //...pick a different bug
-				}
+				//if ( bugs[j].ActedThisCycle() ) {
+				//	--i;	
+				//	continue; //...pick a different bug
+				//}
 
 				bugs[i].Move();
 				bugs[i].Grow();

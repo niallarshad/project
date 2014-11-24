@@ -1,0 +1,1 @@
+I implemented step 13 in the histogram didnt see a point in making a new diagram

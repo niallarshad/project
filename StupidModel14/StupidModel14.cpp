@@ -22,7 +22,7 @@
 #include <iostream>
 #include <fstream>
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 #include <vector>
 
 #define GridSize 100
@@ -58,7 +58,7 @@ vector<int> getBugDistribution(vector<Bug> bugs, unsigned int groups = 10 ) {
 
 		if ( size <= groups ) {
 			//increment the size bracket for this size
-			distro[size - 1]++;
+			distro[size]++;
 		}
 	}
 
@@ -73,6 +73,7 @@ int main()
 	float maxBugConsumeRate = 1.0f;
 	float maxCellProduceRate = 0.01f;
 	bool criticalMassReached = false;
+	float initialBugSizeMean = 0.1f, initialBugSizeSD = 0.3f;
 
 	float minSize, meanSize, maxSize;	//step 8; output to a file the minimum bugsize, the average bugsize and the max bugsize;
 
@@ -85,6 +86,12 @@ int main()
 
 		cout << "\nInput food production rate: ";
 		cin >> maxCellProduceRate;
+
+		cout << "\nInput starting bug size average: ";
+		cin >> initialBugSizeMean;
+
+		cout << "\nInput starting bug size standard deviation: ";
+		cin >> initialBugSizeSD;
 	}
 	catch (...) {
 		cout << "Invalid arguement!\nIma just use the defaults..." << endl;
@@ -94,7 +101,7 @@ int main()
 	font.loadFromFile( "../../kenvector_future.ttf" );
 
 	// Create the main window
-	RenderWindow window(VideoMode(800, 600, 32), "Stupid model 9");
+	RenderWindow window(VideoMode(800, 600, 32), "Stupid model 14");
 	Histogram graph( 10, font );
 		 
 	std::vector<std::vector<HabitatCell> > grid;
@@ -126,6 +133,13 @@ int main()
 		if ( grid[x][y].hasBug != true ) {
 			grid[x][y].hasBug = true;
 			bugs.push_back( Bug(Vector2i(x,y), 1, &grid, maxBugConsumeRate) );
+
+			//get a random float from 0.0 to twice the SD
+			float deviation = static_cast<float>( rand() / (static_cast<float>(RAND_MAX / (initialBugSizeSD*2))) );
+
+			deviation -= initialBugSizeSD;	//allow deviation to be from -SD to +SD
+
+			bugs.rbegin()->setSize( max(initialBugSizeMean + deviation, 0.0f) );	//don't let size be less than 0
 		}
 		else {
 			--i;
@@ -169,8 +183,7 @@ int main()
 
 		mousePressed = Mouse::isButtonPressed( Mouse::Button::Left );
 
-		//once a second
-		if ( clock.getElapsedTime().asSeconds() >= 0.25 ) {
+		if ( clock.getElapsedTime().asSeconds() >= 0 ) {
 
 			//tell all the HabitatCells to produce food
 			for(std::vector<std::vector<HabitatCell>>::iterator itr = grid.begin();
@@ -190,26 +203,29 @@ int main()
 			maxSize = -FLT_MAX;
 			meanSize = 0;
 
-			//tell teh bugs they're allowed to act
-			for(int i = 0; i < bugs.size(); i++)
-			{
-				bugs[i].CanActThisCycle();
-			}
+			//sort the bugs in descending order by size;
+			std::sort(bugs.rbegin(), bugs.rend());
 
-			//randomize the order in which bugs move and grow
-			for(int i = 0; i < noOfBugs; i++)
-			{
-				//pick a random bug...
-				int j = rand() % noOfBugs;
-
-				//...if the bug was already chosen to move/grow...
-				if ( bugs[j].ActedThisCycle() ) {
-					--i;	
-					continue; //...pick a different bug
-				}
-
+			for(int i = 0; i < bugs.size(); i++) {
+			
 				bugs[i].Move();
 				bugs[i].Grow();
+
+				//if the bug fails the survival probability, it dies
+				if ( bugs[i].Mortality() ) {
+					vector<Bug>::iterator nth = bugs.begin() + i--;	//decrement i so that we don't skip next bug
+					bugs.erase( nth );
+					continue;
+				}
+				//if the bugs reaches a certain size, kill it and hatch it's eggs
+				else {
+					if ( bugs[i].IsReproducing(&bugs) ) {
+						vector<Bug>::iterator nth = bugs.begin() + i--;	//decrement i so that we don't skip next bug
+						bugs.erase( nth );
+						continue;
+					}
+				}
+					
 
 				//...find min, mean and max bug sizes
 				float size = bugs[i].getSize();
@@ -220,11 +236,6 @@ int main()
 
 				//add this bug's size to the average...
 				meanSize += size;
-
-				if ( size >= Bug::CriticalMass ) {
-					criticalMassReached = true;
-					break;
-				}
 			}
 
 			//...divide by the number of bugs to get the average size
@@ -233,6 +244,15 @@ int main()
 			logStream << "Minimum Bug Size: " << minSize;
 			logStream << "\t Average Bug Size: " << meanSize;
 			logStream << "\t Maximum Bug Size: " << maxSize << endl;
+
+			//if no bugs left or 1000 iteration passed...
+			static int step;
+			if ( bugs.size() == 0 || ++step >= 1000) {
+				cout << bugs.size() << " bugs left. " << step << " iterations processed" << endl;
+				window.close();
+			}
+
+			window.setTitle("Timestep: " + to_string(step));
 
 			//restart the clock
 			clock.restart();
@@ -251,11 +271,6 @@ int main()
 		//update and draw the graph
 		graph.Update( getBugDistribution(bugs) );
 		graph.Draw( Vector2i(window.getPosition().x + window.getSize().x, window.getPosition().y) );
-
-		if ( criticalMassReached ) {
-			cout << "\nA bug reached critical mass! (" << Bug::CriticalMass << ")\n" << endl;
-			window.close();
-		}
 
 	} //loop back for next frame
 
