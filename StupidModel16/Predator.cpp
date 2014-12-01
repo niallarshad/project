@@ -2,25 +2,24 @@
 #include "Predator.h"
 
 Predator::Predator(Vector2i loc, float radius, std::vector<std::vector<HabitatCell> > * grid)
-	: gridLoc(loc), m_shape(ra dius), grid(grid) {
+	: gridLoc(loc), m_shape(radius), grid(grid) {
 	m_shape.setPosition(gridLoc.x * GridSpacing, gridLoc.y * GridSpacing);
-	m_shape.setFillColor(Color::Blue);
+	m_shape.setFillColor(Color::Magenta);
 }
 
-void wrapAroundGrid(Vector2i &vec) {
-	//wrap around edges of grid
-	if (vec.x < 0)
-		vec.x += GridSize;
-	else if (vec.x >= GridSize)
-		vec.x -= GridSize;
+void Predator::clampToGrid(Vector2i &vec, Vector2u const &gridSize) {
+	if(vec.x < 0)
+		vec.x = 0;
+	else if(vec.x >= gridSize.x)
+		vec.x = gridSize.x - 1;
 
-	if (vec.y < 0)
-		vec.y += GridSize;
-	else if (vec.y >= GridSize)
-		vec.y -= GridSize;
+	if(vec.y < 0)
+		vec.y = 0;
+	else if(vec.y >= gridSize.y)
+		vec.y = gridSize.y - 1;
 }
 
-void Predator::Hunt(vector<Bug> &bugs) {
+void Predator::Hunt(vector<Bug> &bugs, Vector2u const &gridSize) {
 
 	vector<Vector2i> suitableCells;
 
@@ -31,9 +30,7 @@ void Predator::Hunt(vector<Bug> &bugs) {
 			//a possible position to move to
 			Vector2i temp = Vector2i( i + gridLoc.x, j + gridLoc.y );
 
-			//wrap around edges of grid
-			wrapAroundGrid( temp );
-
+			clampToGrid( temp, gridSize );
 
 			HabitatCell* c = &( grid->at(temp.x).at(temp.y) );
 
@@ -49,7 +46,9 @@ void Predator::Hunt(vector<Bug> &bugs) {
 	//if we failed to find a suitable cell with a bug in it...
 	if ( suitableCells.size() == 0 ) {
 		//...pick a random neighbouring cell to move into
-		suitableCells.push_back( Vector2i( rand() % 2 + gridLoc.x - 1, rand() % 2 + gridLoc.y - 1) );
+		Vector2i temp = Vector2i( rand() % 3 + gridLoc.x - 1, rand() % 3 + gridLoc.y - 1);
+		clampToGrid(temp, gridSize);
+		suitableCells.push_back( temp );
 		chosenCell = 0;
 	}
 	else {
@@ -72,9 +71,18 @@ void Predator::Hunt(vector<Bug> &bugs) {
 	m_shape.setPosition(gridLoc.x * GridSpacing, gridLoc.y * GridSpacing);
 	
 	//if the cell we just moved into has a bag...
-	if ( grid->at(gridLoc.x).at(gridLoc.y).hasBug() ) {
+	if ( grid->at(gridLoc.x).at(gridLoc.y).hasBug == true) {
 		//...om nom nom
-		vector<Bug>::iterator nth = bugs.begin() + i;
-		bugs.erase( nth );
+		for(auto itr = bugs.begin(); itr != bugs.end(); ++itr) {
+			if(itr->getPosition() == gridLoc) {
+				grid->at(gridLoc.x).at(gridLoc.y).hasBug = false;
+				bugs.erase(itr);
+				break;
+			}
+		}
 	}
+}
+
+void Predator::Draw(RenderWindow &w) {
+	w.draw(m_shape);
 }

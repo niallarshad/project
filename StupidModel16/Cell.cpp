@@ -2,7 +2,7 @@
 #include "Cell.h"
 
 //CELL CTOR
-Cell::Cell() : hasBug(false) { }
+Cell::Cell() : hasBug(false), hasPredator(false) { }
 
 //HABITAT CELL CTOR
 HabitatCell::HabitatCell( int xPos, int yPos, float MaxFoodProductionRate, float FoodAvailability)

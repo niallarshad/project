@@ -5,17 +5,29 @@
 int Bug::survivalProbability = 95;	//percentage chance of bug surviving a timestep
 int Bug::eggs = 5;
 
-void wrapAroundGrid(Vector2i &vec) {
-	//wrap around edges of grid
+//void wrapAroundGrid(Vector2i &vec, Vector2u const &GridSize) {
+//	//wrap around edges of grid
+//	if(vec.x < 0)
+//		vec.x += GridSize.x;
+//	else if(vec.x >= GridSize.x)
+//		vec.x -= GridSize.x;
+//
+//	if(vec.y < 0)
+//		vec.y += GridSize.y;
+//	else if(vec.y >= GridSize.y)
+//		vec.y -= GridSize.y;
+//}
+
+void clampToGrid(Vector2i &vec, Vector2u const &gridSize) {
 	if(vec.x < 0)
-		vec.x += GridSize;
-	else if(vec.x >= GridSize)
-		vec.x -= GridSize;
+		vec.x = 0;
+	else if(vec.x >= gridSize.x)
+		vec.x = gridSize.x - 1;
 
 	if(vec.y < 0)
-		vec.y += GridSize;
-	else if(vec.y >= GridSize)
-		vec.y -= GridSize;
+		vec.y = 0;
+	else if(vec.y >= gridSize.y)
+		vec.y = gridSize.y - 1;
 }
 
 Bug::Bug(Vector2i loc, float radius, std::vector<std::vector<HabitatCell> > * grid,  float MaxConsumptionRate)
@@ -26,7 +38,7 @@ Bug::Bug(Vector2i loc, float radius, std::vector<std::vector<HabitatCell> > * gr
 		//m_shape.setFillColor(Color(rand()%255, rand()%255, rand()%255));
 	}
 	
-void Bug::Move() {
+void Bug::Move(Vector2u const &gridSize) {
 
 		//Vector2i desiredLoc;
 		//vector<HabitatCell*> possibleLocations;
@@ -41,8 +53,10 @@ void Bug::Move() {
 				Vector2i temp = Vector2i( i + gridLoc.x, j + gridLoc.y );
 
 				//wrap around edges of grid
-				wrapAroundGrid( temp );
+				//wrapAroundGrid( temp, gridSize );
 
+				//cgrid is no longer toroidal
+				clampToGrid(temp, gridSize);
 
 				HabitatCell* c = &( grid->at(temp.x).at(temp.y) );
 
@@ -105,7 +119,7 @@ void Bug::Draw(sf::RenderWindow &w) {
 	w.draw(m_shape);
 }
 
-bool Bug::IsReproducing( vector<Bug>* bugs ) {
+bool Bug::IsReproducing( vector<Bug>* bugs, Vector2u const &gridSize ) {
 
 	bool reproducing = false;
 
@@ -126,7 +140,10 @@ bool Bug::IsReproducing( vector<Bug>* bugs ) {
 			do {
 				//random location within 0-3 cells
 				loc = Vector2i( rand() % 4 + gridLoc.x, rand() % 4 + gridLoc.y );
-				wrapAroundGrid( loc );
+
+				//wrapAroundGrid(loc, gridSize);
+				clampToGrid(loc, gridSize);
+
 				tries++;
 			} while ( grid->at(loc.x).at(loc.y).hasBug == true && tries != 5 );
 

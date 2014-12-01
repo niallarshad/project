@@ -20,9 +20,9 @@
 
 #include "SFML/Graphics.hpp"
 
-#define GridSize 100
+//#define GridSize 100
 //#define BugCount 100
 #define BugVision 4
-#define GridSpacing 10
+#define GridSpacing 5
 
 #endif

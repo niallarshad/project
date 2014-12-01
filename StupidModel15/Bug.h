@@ -3,6 +3,7 @@
 
 #include "SFML\Graphics.hpp"
 #include "Cell.h"
+#include <cmath>
 
 using namespace sf;
 
@@ -31,10 +32,10 @@ public:
 	//Returns amount of food consumed
 	float Grow();
 
-	void Move();
+	void Move(Vector2u const &gridSize);
 
 	//returns true if bug's size is >= 10
-	bool IsReproducing( vector<Bug>* bugs );
+	bool IsReproducing( vector<Bug>* bugs, Vector2u const &gridSize);
 
 	//returns true if bug fails at life
 	bool Mortality();
