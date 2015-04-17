@@ -209,10 +209,14 @@ int main()
 	ofstream logStream;
 	logStream.open( "bugSizes.log" );
 	logStream << "\n---------------------- Application Started ----------------" << endl;
-
+ 
+	ofstream logStream1;
+	logStream1.open( "TimeTake.log" );
+	logStream1 << "\n---------------------- Application Started ----------------" << endl;
 	//START WINDOW LOOP
 	while (window.isOpen())
 	{
+		float begin = clock.getElapsedTime().asSeconds();
 		// Process events
 		sf::Event Event;
 		while (window.pollEvent(Event))
@@ -318,6 +322,9 @@ int main()
 
 			window.setTitle("Timestep: " + to_string(step));
 
+			float end = clock.getElapsedTime().asSeconds();
+			float elapsed_secs = end - begin;
+			logStream1 << elapsed_secs << endl;
 			//restart the clock
 			clock.restart();
 		}
@@ -350,6 +357,8 @@ int main()
 
 	logStream << "-------------------- Application closing ---------------------" << endl;
 	logStream.close();
+	logStream1 << "-------------------- Application closing ---------------------" << endl;
+	logStream1.close();
 	system("PAUSE");
 
 	return EXIT_SUCCESS;

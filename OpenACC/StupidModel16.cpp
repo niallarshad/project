@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+#include <stdio.h>
 #include "SFML/OpenGL.hpp"
 #include <iostream>
 #include <fstream>
@@ -13,11 +13,10 @@
 //#define BugVision 4
 //#define GridSpacing 5
 
-#include "Bug.h"
+//#include "Bug.h"
 #include "Predator.h"
 #include "Histogram.h"
-#include "tree.hh"
-#include <omp.h>
+
 
 using namespace sf;
  
@@ -155,25 +154,20 @@ int main()
 	font.loadFromFile( "../kenvector_future.ttf" );
 
 	// Create the main window
-	RenderWindow window(VideoMode(1000, 600, 32), "Stupid model 16");
-	Histogram graph( 10, font );
-	
+	//RenderWindow window(VideoMode(800, 600, 32), "Stupid model 16");
+	//Histogram graph( 10, font );
 		 
 	std::vector<std::vector<HabitatCell> > grid;
 	std::vector<Bug> bugs;
 	std::vector<Predator> predators;
 
+	grid.reserve( GridSize.x );
 	bugs.reserve( noOfBugs );
 	predators.reserve( noOfPreds );
 
-	bool mousePressed = Mouse::isButtonPressed( Mouse::Button::Left );
+	//bool mousePressed = Mouse::isButtonPressed( Mouse::Button::Left );
 
 	createGridFromFile("../Stupid_Cell.DATA", grid, GridSize);
-	grid.reserve( GridSize.x );
-
-	tree<pair<Vector2u, Vector2u>> myTree;
-	auto root = myTree.begin();
-	myTree.insert(root, make_pair(Vector2u(0,0), GridSize));
 
 	//place bugs randomly in the grid
 	for (int i = 0; i < noOfBugs; i++) {
@@ -216,17 +210,18 @@ int main()
 	ofstream logStream;
 	logStream.open( "bugSizes.log" );
 	logStream << "\n---------------------- Application Started ----------------" << endl;
-	
+
 	ofstream logStream1;
 	logStream1.open( "TimeTaken.log" );
 	logStream1 << "\n---------------------- Application Started ----------------" << endl;
 
 	//START WINDOW LOOP
-	while (window.isOpen())
+	static int step =0;
+	while (step < 1000)
 	{
 		float begin = clock.getElapsedTime().asSeconds();
 		// Process events
-		sf::Event Event;
+		/*sf::Event Event;
 		while (window.pollEvent(Event))
 		{
 		// Close window : exit
@@ -236,7 +231,7 @@ int main()
 		if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Escape))
 			window.close();
 		}
-		
+
 		//output the values of cell on mouse button down (if button wasn't down last frame)
 		if ( Mouse::isButtonPressed(Mouse::Button::Left) && !mousePressed) {
 			mousePressed = true;
@@ -248,9 +243,9 @@ int main()
 			catch (...) {
 				std::cout << "No cell at this position" << std::endl;
 			}
-		}
+		}*/
 
-		mousePressed = Mouse::isButtonPressed( Mouse::Button::Left );
+		//mousePressed = Mouse::isButtonPressed( Mouse::Button::Left );
 
 		if ( clock.getElapsedTime().asSeconds() >= 0 ) {
 
@@ -275,103 +270,15 @@ int main()
 
 			//sort the bugs in descending order by size;
 			std::sort(bugs.rbegin(), bugs.rend());
-// start 4 threads to run the move command
-
-
-			int maxT = omp_get_max_threads();
-
-			if(GridSize.x / 16 < maxT)
-			{
-				maxT = GridSize.x / 16;
-			}
-
-			if(maxT % 2 == 1)
-			{
-				maxT = maxT - 1;
-			}
-			cout << maxT << endl;
-#pragma omp parallel num_threads(maxT)
-			{
-				int xStart = 0, yStart = 0, xEnd = GridSize.x / (maxT/2), yEnd = GridSize.y / 2;
-				int id = omp_get_thread_num();
-				// if its the first thread
-				if(id == 0)
-				{
-					cout << "Your on first thread "<<endl;
-				}
-	
-				// if its the last thread
-				else if(id == maxT - 1)
-				{
-					xStart = xEnd;
-					yStart = yEnd;
-					xEnd = GridSize.x;
-					yEnd = GridSize.y;
-					cout << id << " is doing stuff "<<endl;
-				}
-	
-				// if its on the top row
-				else if(id < maxT/2)
-				{
-					xStart = xEnd * id;
-					xEnd = (GridSize.x / (maxT/2)) * (id + 1);
-					cout << id << " is doing stuff "<<endl;
-				}
-	
-				//on bottom row
-				else if(id >= (maxT/2))
-				{
-					xStart = 0;
-					yStart = GridSize.y / 2;
-					xEnd = GridSize.x / (maxT/2);
-					yEnd = GridSize.y;
-		
-					//first element
-					if(id == (maxT/2))
-					{
-						cout << "Your on first thread second line "<<endl;
-					}
-					else //if(id >= (maxT/2))
-					{
-						xStart = (GridSize.x / (maxT/2)) * ((id - (maxT/2)));
-						xEnd = (GridSize.x / (maxT/2)) * ((id - (maxT/2)) + 1);
-						cout << id << " is doing stuff "<<endl;
-					}
-		
-				}
-				 /////////////////////////////////////////////////////////////////////////////
-				// Work out if the cell has a bug in it or not and move the bug if it does //
-			   /////////////////////////////////////////////////////////////////////////////
-   
-			   for(int x = xStart; x < xEnd; ++x) 
-			   { 
-					for(int y = yStart; y < yEnd; ++y)
-					{
-						if(grid[x][y].hasBug)
-						{
-							for(int j= 0;j < bugs.size(); ++j) 
-							{
-								Vector2i bPos = bugs[j].getPosition();
-								if(bPos.x == x && bPos.y == y && bugs[j].canMove())
-								{
-									bugs[j].Move(GridSize);
-								}//end if not paralyzed
-							}//end for bugsies
-						}//end if has bug
-						#pragma omp barrier
-					}//end suby for
-				}//end subx for
-	
-				cout << "Thread " << id << " end doing stuff" << endl;
-			}//end omp parrellogram
-
-		
+			#pragma acc kernals
 			for(int i = 0; i < bugs.size(); i++) {
+				bugs[i].Move(GridSize);
+			}
+			for(int i = 0; i < bugs.size(); i++) {
+			
 				
-				//bugs[i].Move(GridSize);
-					
 				bugs[i].Grow();
-				
+
 				//if the bug fails the survival probability, it dies
 				if ( bugs[i].Mortality() ) {
 					Vector2i loc = bugs[i].getPosition();
@@ -399,11 +306,8 @@ int main()
 
 				//add this bug's size to the average...
 				meanSize += size;
-
-				bugs[i].setCanMove(true);
 			}
-		
-			
+
 			for(auto itr = predators.begin(); itr != predators.end(); ++itr) {
 				itr->Hunt(bugs, GridSize);
 			}
@@ -416,22 +320,22 @@ int main()
 			logStream << "\t Maximum Bug Size: " << maxSize << endl;
 
 			//if no bugs left or 1000 iteration passed...
+			/*
 			static int step;
 			if ( bugs.size() == 0 || ++step >= 1000) {
 				cout << bugs.size() << " bugs left. " << step << " iterations processed" << endl;
 				window.close();
 			}
-
-			window.setTitle("Timestep: " + to_string(step));
-
+			*/
+			//window.setTitle("Timestep: " + to_string(step));
+			step++;
 			float end = clock.getElapsedTime().asSeconds();
 			float elapsed_secs = end - begin;
 			logStream1 << elapsed_secs << endl;
-			
 			//restart the clock
 			clock.restart();
 		}
-
+		/*
 		//prepare frame
 		window.clear();
 
@@ -455,7 +359,8 @@ int main()
 		//update and draw the graph
 		graph.Update( getBugDistribution(bugs) );
 		graph.Draw( Vector2i(window.getPosition().x + window.getSize().x, window.getPosition().y) );
-
+		*/
+		cout << step << endl;
 	} //loop back for next frame
 
 	logStream << "-------------------- Application closing ---------------------" << endl;
